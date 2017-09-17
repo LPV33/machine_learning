@@ -67,6 +67,9 @@ for line in Female.Name:
     print (line)
 """
 
+"""
+Pick out women names
+"""
 Names =[]
 
 for line in Female.Name:
