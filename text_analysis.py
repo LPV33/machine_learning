@@ -24,16 +24,28 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import KFold
 import sklearn.metrics
 import os
+import heapq
+
 print(os.listdir(os.getcwd()))
 
 """Read raw data"""
 from sklearn import datasets
+from sklearn.datasets import fetch_20newsgroups
 
-newsgroups = datasets.fetch_20newsgroups(
+
+CACHE_NAME = "20news-19997.tar.gz"
+
+newsgroups = fetch_20newsgroups(
+                    data_home='C:/Users/plaptev/scikit_learn_data/20_newsgroups/',
+                    subset='all',
+                    categories=['alt.atheism', 'sci.space'])
+"""
+datasets.fetch_20newsgroups(
+                    data_home='C:/Users/plaptev/scikit_learn_data/20_newsgroups/',
                     subset='all',
                     categories=['alt.atheism', 'sci.space']
              )
-
+"""
 
 
 tf_idf = TfidfVectorizer()
@@ -77,9 +89,15 @@ clf.fit(mapped_data, newsgroups.target)
 
 feature_mapping = tf_idf.get_feature_names()
 
-weight = clf.coef_[0]
+print(len(feature_mapping))
 
-print (weight)
+weights = abs(clf.coef_.toarray())
+print(len(weights))
+print((weights.size))
+maxweights = heapq.nlargest(10, range(weights.size), weights.take)
+
+for i in maxweights:
+    print (feature_mapping[i])
 """d = dict.fromkeys(feature_mapping, weight)
 
 print(d)"""
