@@ -56,7 +56,7 @@ Looking for the best parameter and min C
 
 best_param = 0
 min_C = 100000
-for a in gs.grid_scores_:
+for a in gs.cv_results_:
     print('A.mean ', a.mean_validation_score, "\n")
     print('A.params ', a.parameters['C'], '\n')
 
