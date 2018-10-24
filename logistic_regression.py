@@ -23,21 +23,24 @@ import pandas
 """Read data data"""
 data = pandas.read_csv('data_logistic.csv', names=['Y', 'X1', 'X2'])
 
-def grad_calc (w1_prev, w2_prev, Y, X1, X2, k, C):
-    l = np.size(Y)
+def grad_calc (w1_prev, w2_prev, data, k, C):
+    l = len(data)
     w1 = w1_prev
     w2 = w2_prev
-    for y, x1, x2 in Y, X1, X2:
+    for row in data:
+        y = row[0]
+        x1 = row[1]
+        x2 = row[2]
         w1 = w1 + k / l * y * x1 * (1 - 1 / (1 + math.exp((-1) * y * (w1_prev * x1 + w2_prev * x2)))) - k * C * w1_prev
         w2 = w2 + k / l * y * x2 * (1 - 1 / (1 + math.exp((-1) * y * (w1_prev * x1 + w2_prev * x2)))) - k * C * w2_prev
     return np.array(w1, w2)
 
 
-def grad_iterations (k, C, accuracy, limit, w0, Y, X1, X2):
+def grad_iterations (k, C, accuracy, limit, w0, data):
     i = 0
     w_old = w0
     while i < limit:
-        w_new = grad_calc(w_old[1], w_old[2], Y, X1, X2, k, C)
+        w_new = grad_calc(w_old[0], w_old[1], data, k, C)
         if (max(abs(w_new - w_old)) <= accuracy):
             return w_new
         i = i + 1
@@ -51,9 +54,9 @@ accuracy = 0.00001
 iterations = 10000
 C = 10
 
-w0 = np.array(0, 0)
+w0 = [0, 0]
 
-weights = grad_iterations(k, C, accuracy, iterations, w0, data['Y'], data['X1'], data['X2'] )
+weights = grad_iterations(k, C, accuracy, iterations, w0, data )
 
 print ('Weights: ', weights, '\n')
 
