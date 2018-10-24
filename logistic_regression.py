@@ -27,13 +27,14 @@ def grad_calc (w1_prev, w2_prev, data, k, C):
     l = len(data)
     w1 = w1_prev
     w2 = w2_prev
-    for row in data:
-        y = row[0]
-        x1 = row[1]
-        x2 = row[2]
+
+    for index, row in data.iterrows():
+        y = row['Y']
+        x1 = row['X1']
+        x2 = row['X2']
         w1 = w1 + k / l * y * x1 * (1 - 1 / (1 + math.exp((-1) * y * (w1_prev * x1 + w2_prev * x2)))) - k * C * w1_prev
         w2 = w2 + k / l * y * x2 * (1 - 1 / (1 + math.exp((-1) * y * (w1_prev * x1 + w2_prev * x2)))) - k * C * w2_prev
-    return np.array(w1, w2)
+    return np.array([w1, w2])
 
 
 def grad_iterations (k, C, accuracy, limit, w0, data):
@@ -45,16 +46,16 @@ def grad_iterations (k, C, accuracy, limit, w0, data):
             return w_new
         i = i + 1
         w_old = w_new
-    return w0
+    return w_old
 
 
 
 k = 0.1
 accuracy = 0.00001
 iterations = 10000
-C = 10
+C = 0
 
-w0 = [0, 0]
+w0 = np.array([0, 0])
 
 weights = grad_iterations(k, C, accuracy, iterations, w0, data )
 
