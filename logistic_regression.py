@@ -12,13 +12,12 @@
 """
 
 import math
-import statistics
 import numpy as np
-from sklearn.linear_model import Perceptron
-import sklearn.metrics
+from sklearn.metrics import roc_auc_score
+"""
 import os
 print(os.listdir(os.getcwd()))
-
+"""
 import pandas
 """Read data data"""
 data = pandas.read_csv('data_logistic.csv', names=['Y', 'X1', 'X2'])
@@ -32,8 +31,11 @@ def grad_calc (w1_prev, w2_prev, data, k, C):
         y = row['Y']
         x1 = row['X1']
         x2 = row['X2']
-        w1 = w1 + k / l * y * x1 * (1 - 1 / (1 + math.exp((-1) * y * (w1_prev * x1 + w2_prev * x2)))) - k * C * w1_prev
-        w2 = w2 + k / l * y * x2 * (1 - 1 / (1 + math.exp((-1) * y * (w1_prev * x1 + w2_prev * x2)))) - k * C * w2_prev
+        w1 = w1 + k / l * y * x1 * (1 - 1 / (1 + math.exp((-1) * y * (w1_prev * x1 + w2_prev * x2))))
+        w2 = w2 + k / l * y * x2 * (1 - 1 / (1 + math.exp((-1) * y * (w1_prev * x1 + w2_prev * x2))))
+
+    w1 = w1 - k * C * w1_prev
+    w2 = w2 - k * C * w2_prev
     return np.array([w1, w2])
 
 
@@ -43,22 +45,36 @@ def grad_iterations (k, C, accuracy, limit, w0, data):
     while i < limit:
         w_new = grad_calc(w_old[0], w_old[1], data, k, C)
         if (max(abs(w_new - w_old)) <= accuracy):
-            return w_new
+            print ('Accuracy', abs(w_new - w_old), '\n')
+            return np.append(w_new, [i])
         i = i + 1
         w_old = w_new
-    return w_old
+    return np.append(w_old, [i])
+
+def predicted_probability(w1, w2, data):
+    a = 1/(1 + np.exp(- w1 * data['X1'] - w2 * data['X2']))
+    return a
 
 
-
-k = 0.1
+k = 0.15
 accuracy = 0.00001
 iterations = 10000
-C = 0
+C = 10
 
 w0 = np.array([0, 0])
 
 weights = grad_iterations(k, C, accuracy, iterations, w0, data )
 
-print ('Weights: ', weights, '\n')
+print ('C = ', C,' Weights: ', weights, '\n')
+
+print ('Accuracy:\n', roc_auc_score(data['Y'], predicted_probability(weights[0], weights[1], data)))
+
+C = 0
+
+weights = grad_iterations(k, C, accuracy, iterations, w0, data )
+
+print ('C = ', C,' Weights: ', weights, '\n')
+
+print ('Accuracy:\n', roc_auc_score(data['Y'], predicted_probability(weights[0], weights[1], data)))
 
 
