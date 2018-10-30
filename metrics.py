@@ -31,6 +31,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
+from sklearn.metrics import roc_auc_score
 
 from sklearn.metrics import precision_recall_fscore_support as score
 """
@@ -63,17 +64,39 @@ for index, row in data.iterrows():
 print ('TP = ', TP, 'TN = ', TN, 'FP = ', FP, 'FN = ', FN, '\n' )
 
 #Accuracy
-
 print ('Accuracy ', accuracy_score(data['true'], data['pred']), 'To check ', (TP+TN)/(TP+FP+FN+TN) )
+#Precision
 Precision = TP/(TP+FP)
+#Recall
 print ('Precision ', precision_score(data['true'], data['pred'], average=None), 'To check ', Precision )
 Recall = TP/(TP+FN)
 print ('Recall ', recall_score(data['true'], data['pred'], average=None), 'To check ', Recall )
+#F-measure
 print ('F-measure ', f1_score(data['true'], data['pred'], average=None), 'To check ', 2*Precision*Recall/(Precision+Recall) )
 
+#Another way to calculate mesures
 precision, recall, fscore, support = score(data['true'], data['pred'])
 
 print('precision: {}'.format(precision))
 print('recall: {}'.format(recall))
 print('fscore: {}'.format(fscore))
 print('support: {}'.format(support))
+
+#Second part of the task
+data1 = pandas.read_csv('scores.csv', names = ['true', 'score_logreg', 'score_svm', 'score_knn', 'score_tree'])
+                    #    dtype = {'score_logreg': float, 'score_svm' : float, 'score_knn': float, 'score_tree': float})
+
+#print(data1.columns.values.tolist())
+
+y_true = data1['true'].values
+y_true = np.delete(y_true, (0), axis=0)
+auc_roc = pandas.DataFrame(columns=['value', 'clf'])
+for column in data1:
+    if (column == 'true'):
+        continue
+    y_score = data1[column].as_matrix()
+    y_score = np.delete(y_score, (0), axis=0)
+    val = roc_auc_score(y_true, y_score)
+    auc_roc.append([val, column], ignore_index=True)
+
+print (auc_roc)
