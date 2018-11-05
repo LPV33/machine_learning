@@ -33,6 +33,8 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import roc_auc_score
 
+from sklearn.metrics import precision_recall_curve
+
 from sklearn.metrics import precision_recall_fscore_support as score
 """
 import os
@@ -84,19 +86,48 @@ print('support: {}'.format(support))
 
 #Second part of the task
 data1 = pandas.read_csv('scores.csv', names = ['true', 'score_logreg', 'score_svm', 'score_knn', 'score_tree'])
-                    #    dtype = {'score_logreg': float, 'score_svm' : float, 'score_knn': float, 'score_tree': float})
+                     #  dtype = {'true': np.bool, 'score_logreg': np.float64, 'score_svm' : np.float64, 'score_knn': np.float64, 'score_tree': np.float64})
 
 #print(data1.columns.values.tolist())
 
 y_true = data1['true'].values
 y_true = np.delete(y_true, (0), axis=0)
-auc_roc = pandas.DataFrame(columns=['value', 'clf'])
+y_true = y_true.astype(np.int32)
+#y_true = y_true.astype(np.bool)
+
+rows_list = []
 for column in data1:
     if (column == 'true'):
         continue
     y_score = data1[column].as_matrix()
     y_score = np.delete(y_score, (0), axis=0)
+    y_score = y_score.astype(np.float64)
     val = roc_auc_score(y_true, y_score)
-    auc_roc.append([val, column], ignore_index=True)
+    rows_list.append({val, column})
+#auc_roc = auc_roc.append([val, column])
+auc_roc = pandas.DataFrame(rows_list, columns=['value', 'clf'])
+print(auc_roc)
 
-print (auc_roc)
+ind = auc_roc['value'].idxmax()
+
+print (auc_roc['clf'][ind])
+
+rows_list = []
+for column in data1:
+    if (column == 'true'):
+        continue
+    y_score = data1[column].as_matrix()
+    y_score = np.delete(y_score, (0), axis=0)
+    y_score = y_score.astype(np.float64)
+    precision, recall, thresholds =  precision_recall_curve(y_true, y_score)
+    for i in range(len(recall)):
+        if (recall[i] >= 0.7):
+            rows_list.append({precision[i], column})
+
+precision_recall = pandas.DataFrame(rows_list, columns=['precision', 'clf'])
+
+#print(precision_recall)
+
+ind = precision_recall ['precision'].idxmax()
+
+print (precision_recall['clf'][ind], precision_recall ['precision'][ind] )
