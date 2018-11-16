@@ -55,16 +55,19 @@ enc = DictVectorizer()
 X_train_categ = enc.fit_transform(train_data[['LocationNormalized', 'ContractTime']].to_dict('records'))
 X_test_categ = enc.transform(test_data[['LocationNormalized', 'ContractTime']].to_dict('records'))
 
-print ('X_train_categ size: ', X_train_categ.size, '\n')
-print ('X_test_categ size: ', X_test_categ.size, '\n')
-print ('test_data[[LocationNormalized, ContractTime]: ', test_data[['LocationNormalized', 'ContractTime']], '\n')
+"""
+print ('X_train_categ size: ', X_train_categ.toarray().shape[0], '\n')
+print ('X_test_categ size: ', X_test_categ.shape[0], '\n')
+print ('X_test_categ: ', X_test_categ.toarray(), '\n')
 print ('X_train_categ: ', X_train_categ, '\n')
-print ('train_full_descr_transformed size: ', train_full_descr_transformed.size, '\n')
-print ('train_data[LocationNormalized] size: ', train_data['LocationNormalized'].size, '\n')
+print ('train_full_descr_transformed size: ', train_full_descr_transformed.shape[0], '\n')
+print ('train_data[SalaryNormalized]: shape', np.matrix(train_data['SalaryNormalized'].values).T.shape[0], '\n')
+"""
+
+Y_answers = np.matrix(train_data['SalaryNormalized'].values).T
 
 from scipy.sparse import hstack
-transformed_data = hstack([train_full_descr_transformed, train_locationNormalized, train_contactTime, train_data['SalaryNormalized'].values]).toarray()
+transformed_data = hstack([train_full_descr_transformed, X_train_categ.toarray(), Y_answers])
 
-#print (train_full_descr_transformed.values)
-#transformed_data = hstack(train_full_descr_transformed.values, X_train_categ.values).toarray()
-print (transformed_data.head(10))
+
+#print (transformed_data)
