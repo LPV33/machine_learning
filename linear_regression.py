@@ -29,14 +29,14 @@ test_data = pd.read_csv('salary-test-mini.csv')
 #Make text to lower case
 train_data['LocationNormalized'] = train_data['LocationNormalized'].str.lower()
 train_data['ContractTime'] = train_data['ContractTime'].str.lower()
-train_data['FullDescription'] = train_data['ContractTime'].str.lower()
+train_data['FullDescription'] = train_data['FullDescription'].str.lower()
 
 test_data['LocationNormalized'] = test_data['LocationNormalized'].str.lower()
 test_data['ContractTime'] = test_data['ContractTime'].str.lower()
-test_data['FullDescription'] = test_data['ContractTime'].str.lower()
+test_data['FullDescription'] = test_data['FullDescription'].str.lower()
 
 #Replace all symbols except letters and digits by spaces
-test_data['FullDescription'] = test_data['FullDescription'].replace('[^a-zA-Z0-9]', ' ', regex = True)
+train_data['FullDescription'] = train_data['FullDescription'].replace('[^a-zA-Z0-9]', ' ', regex = True)
 test_data['FullDescription'] = test_data['FullDescription'].replace('[^a-zA-Z0-9]', ' ', regex = True)
 
 print(train_data.columns.values.tolist())
@@ -54,17 +54,29 @@ enc = DictVectorizer()
 
 X_train_categ = enc.fit_transform(train_data[['LocationNormalized', 'ContractTime']].to_dict('records'))
 X_test_categ = enc.transform(test_data[['LocationNormalized', 'ContractTime']].to_dict('records'))
-
+"""
 print ('X_train_categ size: ', X_train_categ.size, '\n')
 print ('X_test_categ size: ', X_test_categ.size, '\n')
 print ('test_data[[LocationNormalized, ContractTime]: ', test_data[['LocationNormalized', 'ContractTime']], '\n')
 print ('X_train_categ: ', X_train_categ, '\n')
 print ('train_full_descr_transformed size: ', train_full_descr_transformed.size, '\n')
 print ('train_data[LocationNormalized] size: ', train_data['LocationNormalized'].size, '\n')
+"""
 
 from scipy.sparse import hstack
-transformed_data = hstack([train_full_descr_transformed, train_locationNormalized, train_contactTime, train_data['SalaryNormalized'].values]).toarray()
+transformed_data = hstack([train_full_descr_transformed, X_train_categ.toarray()])
+test_transformed_data = hstack([test_full_descr_transformed, X_test_categ.toarray()])
 
 #print (train_full_descr_transformed.values)
 #transformed_data = hstack(train_full_descr_transformed.values, X_train_categ.values).toarray()
-print (transformed_data.head(10))
+print (transformed_data)
+
+
+from sklearn.linear_model import Ridge
+
+clf = Ridge(alpha=1.0,  random_state=241)
+
+clf.fit(transformed_data, train_data['SalaryNormalized'])
+print(clf.predict(test_transformed_data))
+
+
