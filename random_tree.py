@@ -19,24 +19,19 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
+
 from sklearn.metrics import r2_score
 
 
-#Function teaching RandomForestRegressor with given number of trees. Return r2_score metric value
+#Function cross validates RandomForestRegressor with given number of trees. Return r2_score metric value
 
-def teach_RFR (n_trees, x_data, y_answers, random_state, shuffle):
-    clf = RandomForestRegressor(n_estimators=n_trees, random_state=random_state)
-    w_old = w0
-    while i < limit:
-        w_new = grad_calc(w_old[0], w_old[1], data, k, C)
-        if (max(abs(w_new - w_old)) <= accuracy):
-            print ('Accuracy', abs(w_new - w_old), '\n')
-            return np.append(w_new, [i])
-        i = i + 1
-        w_old = w_new
-    return np.append(w_old, [i])
+def cross_val_score_RF (n_trees, x_data, y_answers):
+    clf = RandomForestRegressor(n_estimators=n_trees, random_state=1)
+    clf.fit(x_data, y_answers) #Why it is necessary!!!!!!!
+    cv = KFold(n_splits=5, random_state=1, shuffle=True)
+    return cross_val_score(clf, x_data, y_answers, cv=cv, scoring='r2')
 
 data = pd.read_csv('abalone.csv')
 
@@ -51,3 +46,12 @@ print(data.columns[last_col])
 Y_answers = data.iloc[:,last_col]
 data = data.drop(data.columns[last_col], axis = 1)
 print(data.columns)
+
+for n_tree in range(50):
+    r2 = cross_val_score_RF(n_tree+1, data, Y_answers)
+    print('Trees: ', n_tree+1, '\n', 'cross_val_score: \n', r2.mean())
+    clf = RandomForestRegressor(n_estimators=n_tree+1, random_state=1)
+    clf.fit(data, Y_answers)
+    predicted = clf.predict(data)
+    print('R2_score: ', r2_score(Y_answers, predicted))
+#    print('Trees: %d  r2_score: %0.2f' % (n_tree+1, r2.mean()))
