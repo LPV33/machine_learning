@@ -40,13 +40,16 @@ def recreate_image(codebook, labels, w, h):
 def ClusterIndicesComp(clustNum, labels_array): #list comprehension
     return np.array([i for i, x in enumerate(labels_array) if x == clustNum])
 
-def recreate_image_mean_colors(km, w, h):
+def recreate_image_mean_colors(km, labels, w, h):
     """Recreate the (compressed) image from the code book & labels"""
     d = km.cluster_centers_.shape[1]
     codebook = []
-    for n_cl in range(d):
+    n_clusters = km.n_clusters
+    for n_cl in range(n_clusters):
         #n_cl_mean = np.mean([ClusterIndicesComp(n_cl, km.labels_)])
-        X = km.labels_[ClusterIndicesComp(n_cl, km.labels_)]
+        n_cluster_labels = ClusterIndicesComp(n_cl, km.labels_)
+        X = km.labels_[n_cluster_labels]
+        max_val =
         n_cl_mean = np.mean(X)
         codebook.append(n_cl_mean)
 
@@ -86,11 +89,11 @@ for n_clusters in range(3):
     plt.title('Clusters')
     plt.imshow(recreate_image(kmeans.cluster_centers_, labels, w, h))
 
-    plt.figure(n_clusters+1)
+    plt.figure(2*(n_clusters+1))
     plt.clf()
     plt.axis('off')
     plt.title('Clusters with mean color')
-    plt.imshow(recreate_image_mean_colors(kmeans, w, h))
+    plt.imshow(recreate_image_mean_colors(kmeans, labels, w, h))
 
 #codebook_random = shuffle(image_array, random_state=0)[:n_colors]
 #print("Predicting color indices on the full image (random)")
