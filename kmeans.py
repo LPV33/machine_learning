@@ -25,7 +25,7 @@ from time import time
 from skimage.io import imread
 from skimage import img_as_float
 
-
+# Recreate a picture by colors from the codebook
 def recreate_image(codebook, labels, w, h):
     """Recreate the (compressed) image from the code book & labels"""
     d = codebook.shape[1]
@@ -37,10 +37,11 @@ def recreate_image(codebook, labels, w, h):
             label_idx += 1
     return image
 
+# Return array indexes belonging the given cluster
 def ClusterIndicesComp(clustNum, labels_array): #list comprehension
     return np.array([i for i, x in enumerate(labels_array) if x == clustNum])
 
-def recreate_image_mean_colors(km, labels, w, h):
+def recreate_image_median_colors(km, orig_image, labels, w, h):
     """Recreate the (compressed) image from the code book & labels"""
     d = km.cluster_centers_.shape[1]
     codebook = []
@@ -48,10 +49,18 @@ def recreate_image_mean_colors(km, labels, w, h):
     for n_cl in range(n_clusters):
         #n_cl_mean = np.mean([ClusterIndicesComp(n_cl, km.labels_)])
         n_cluster_labels = ClusterIndicesComp(n_cl, km.labels_)
-        X = km.labels_[n_cluster_labels]
-        max_val =
-        n_cl_mean = np.mean(X)
-        codebook.append(n_cl_mean)
+        X = orig_image[n_cluster_labels]
+        codebook.append(np.median(X, axis=0))
+    """
+    This is an example of how to calculate means values
+        r_mean = np.mean(X[:,0])
+        g_mean = np.mean(X[:,1])
+        b_mean = np.mean(X[:,2])
+        ##mean = np.amin(X, axis=0)
+        mean =[r_mean, g_mean, b_mean]
+        codebook.append(mean)
+    """
+
 
     image = np.zeros((w, h, d))
     label_idx = 0
@@ -60,6 +69,27 @@ def recreate_image_mean_colors(km, labels, w, h):
             image[i][j] = codebook[labels[label_idx]]
             label_idx += 1
     return image
+
+def calc_median_colors(n_clusters, orig_image, labels):
+    """Recreate the (compressed) image from the code book & labels"""
+    d = 3 #RGB
+    codebook = []
+
+    for n_cl in range(n_clusters):
+        #Take pixels indexes that belong to same cluster
+        n_cluster_labels = ClusterIndicesComp(n_cl, labels)
+        X = orig_image[n_cluster_labels]
+        codebook.append(np.median(X, axis=0))
+    """
+    This is an example of how to calculate means values
+        r_mean = np.mean(X[:,0])
+        g_mean = np.mean(X[:,1])
+        b_mean = np.mean(X[:,2])
+        ##mean = np.amin(X, axis=0)
+        mean =[r_mean, g_mean, b_mean]
+        codebook.append(mean)
+    """
+    return np.array(codebook)
 
 origin_image = imread('parrots.jpg')
 converted_img = img_as_float(origin_image)
@@ -76,24 +106,27 @@ image_array = np.reshape(converted_img, (w * h, d))
 
 
 
-for n_clusters in range(3):
+for n_clusters in range(7):
     kmeans = KMeans(n_clusters=n_clusters+1, random_state=241, init='k-means++').fit(image_array)
 
     # Get labels for all points
 
     labels = kmeans.predict(image_array)
 
-    plt.figure(n_clusters+1)
+    #Draw picture with mean colors
+    plt.figure(2*(n_clusters+1))
     plt.clf()
     plt.axis('off')
     plt.title('Clusters')
     plt.imshow(recreate_image(kmeans.cluster_centers_, labels, w, h))
 
-    plt.figure(2*(n_clusters+1))
+    #Draw picture with median colors
+    plt.figure(2*(n_clusters+1)+1)
     plt.clf()
     plt.axis('off')
     plt.title('Clusters with mean color')
-    plt.imshow(recreate_image_mean_colors(kmeans, labels, w, h))
+    codebook_median_colors = calc_median_colors(n_clusters+1, image_array, labels)
+    plt.imshow(recreate_image(codebook_median_colors, labels, w, h))
 
 #codebook_random = shuffle(image_array, random_state=0)[:n_colors]
 #print("Predicting color indices on the full image (random)")
@@ -106,7 +139,7 @@ for n_clusters in range(3):
 
 
 # Display all results, alongside original image
-plt.figure(1)
+plt.figure(0)
 plt.clf()
 plt.axis('off')
 plt.title('Original image (96,615 colors)')
