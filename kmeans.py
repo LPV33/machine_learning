@@ -102,7 +102,7 @@ for n_clusters in range(20):
     image_with_median_colors = np.reshape(recreate_image(codebook_median_colors, labels, w, h), (w * h, d))
     psnr_medians = calc_psnr(image_array, image_with_median_colors)
 
-    print ("Clusters: \%d. Mean colors PSNR \%f. Median colors PSNR \%f\n", n_clusters, psnr_means, psnr_medians)
+    print ('Clusters: %d. Mean colors PSNR %f. Median colors PSNR %f\n'% (n_clusters, psnr_means, psnr_medians))
 
     #Draw picture with mean colors
     if (False):  # You decide to display the pictures or not
